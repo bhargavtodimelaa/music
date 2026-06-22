@@ -672,8 +672,11 @@ function extractTextSignals(query){
   Object.entries(ERA_KEYWORDS).forEach(([era,words])=>{ if(words.some(w=>q.includes(w))) sig.eras.push(era); });
   Object.entries(MOOD_KEYWORDS).forEach(([mood,words])=>{ if(words.some(w=>q.includes(w))) sig.moods.push(mood); });
   Object.entries(ALIAS_TO_ARTIST).forEach(([alias,canon])=>{ if(q.includes(alias)) sig.artists.push(canon); });
-  // keep meaningful raw tokens (drop tiny stopwords) as a fallback signal
-  q.split(/\s+/).filter(t=>t.length>3 && !['song','songs','music','telugu','hindi','tamil'].includes(t)).forEach(t=>sig.terms.push(t));
+  // keep meaningful raw tokens (drop tiny stopwords + strip punctuation) as a fallback signal.
+  // Punctuation stripping matters here because this function now also runs on
+  // raw song titles/albums (e.g. 'Jabilli Kosam (From "Movie Name")'), which
+  // carry parens/quotes that a plain whitespace split would leave attached.
+  q.replace(/[()\[\]"'.,!?]/g,' ').split(/\s+/).filter(t=>t.length>3 && !['song','songs','music','telugu','hindi','tamil','from'].includes(t)).forEach(t=>sig.terms.push(t));
   return sig;
 }
 
@@ -746,6 +749,24 @@ function recordPlaySignal(song){
       bump(tasteProfile.moods, info.mood, 2);
     }
   });
+
+  // The song's own title/album carries the same kind of mood/era/keyword
+  // signal a typed search query would — e.g. clicking "Jabilli Kosam" directly
+  // from a home rail (no typing involved) should still let words in its title
+  // and era/mood keywords from its album name register, exactly like typing
+  // "Jabilli Kosam" into the search box would. Without this, a song clicked
+  // straight off the home feed only ever contributes its artist/language —
+  // never its own title text — which is the gap being closed here.
+  const titleText = `${song.name||''} ${song.album?.name||''}`;
+  const titleSig = extractTextSignals(titleText);
+  titleSig.eras.forEach(e=>bump(tasteProfile.eras, e, 3));
+  titleSig.moods.forEach(m=>bump(tasteProfile.moods, m, 3));
+  titleSig.languages.forEach(l=>bump(tasteProfile.languages, l, 2));
+  titleSig.terms.forEach(t=>bump(tasteProfile.rawTerms, t, 2));
+  // an artist named directly in the title/album text (rare, but covers cover
+  // versions or compilation albums) gets the same treatment as a typed search
+  titleSig.artists.forEach(a=>bump(tasteProfile.artists, a, 4));
+
   playLog.unshift({songId:song.id, title:cleanName(song.name), artist:getArtist(song), ts:Date.now()});
   playLog = playLog.slice(0,60);
   saveTasteState();
