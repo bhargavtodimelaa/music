@@ -646,14 +646,6 @@ function bump(bucket, key, amount){
   bucket[key] = (bucket[key]||0) + amount;
 }
 
-// Decay everything slightly before adding new weight, so older signals fade
-// but never vanish — a recent search should matter more than one from 20 queries ago.
-function decayProfile(){
-  const DECAY = 0.94;
-  ['artists','languages','eras','moods','rawTerms'].forEach(k=>{
-    Object.keys(tasteProfile[k]).forEach(key=>{ tasteProfile[k][key] *= DECAY; if(tasteProfile[k][key] < 0.5) delete tasteProfile[k][key]; });
-  });
-}
 
 // Extract signals from the literal query text itself (works even with zero API results)
 function extractTextSignals(query){
@@ -687,7 +679,6 @@ function extractSongSignals(songs){
 // Main entry point: call every time the user runs a search, feeding both the
 // query text and (once fetched) the resulting songs into the profile.
 function recordSearchSignal(query, songs){
-  decayProfile();
   const textSig = extractTextSignals(query);
   const songSig = songs ? extractSongSignals(songs) : {languages:[],artists:[]};
 
