@@ -54,6 +54,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 .badge-live{background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.35);color:#f87171;border-radius:var(--radius-pill);padding:0.35rem 0.8rem;font-size:0.75rem;font-weight:600;display:flex;align-items:center;gap:5px;}
 .badge-live::before{content:'';width:6px;height:6px;background:#ef4444;border-radius:50%;animation:pulse-dot 1.4s ease-in-out infinite;}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(0.8);}}
+
 /* ===== SEEK FLASH ANIMATION ===== */
 .seek-flash{
   position:fixed;top:0;bottom:0;width:35%;
@@ -113,10 +114,11 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 
 /* ===== SECTION ===== */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin:2rem 0 1.1rem;gap:1rem;}
-.section-label{display:flex;align-items:center;gap:0.6rem;}
-.section-label h2{font-family:'Space Grotesk',sans-serif;font-size:1.35rem;font-weight:800;letter-spacing:-0.2px;}
-.section-label .dot{width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 6px var(--accent-glow);}
-.section-count{font-size:0.78rem;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:var(--radius-pill);}
+.section-label{display:flex;align-items:center;gap:0.6rem;min-width:0;}
+.section-label h2{font-family:'Space Grotesk',sans-serif;font-size:1.35rem;font-weight:800;letter-spacing:-0.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.section-label .dot{width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 6px var(--accent-glow);flex-shrink:0;}
+.section-sub{font-size:0.76rem;color:var(--text3);margin-top:2px;}
+.section-count{font-size:0.78rem;color:var(--text3);background:var(--surface2);border:1px solid var(--border);padding:3px 10px;border-radius:var(--radius-pill);flex-shrink:0;}
 
 /* ===== HERO ===== */
 .hero-section{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;}
@@ -135,17 +137,21 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 
 /* ===== CARDS GRID ===== */
 .cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:1.2rem;}
+.cards-row{display:flex;gap:1.2rem;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximate;}
+.cards-row::-webkit-scrollbar{height:5px;}
+.cards-row .song-card{flex:0 0 170px;scroll-snap-align:start;}
 .song-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;position:relative;overflow:hidden;transition:var(--tr);animation:fade-up 0.38s ease both;}
 .song-card:hover{transform:translateY(-6px);border-color:rgba(249,115,22,0.35);box-shadow:0 20px 40px rgba(0,0,0,0.5);}
 .song-card:hover .card-overlay{opacity:1;}
 .song-card:hover .card-play-btn{opacity:1;transform:scale(1);}
 @keyframes fade-up{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 .card-img-wrap{position:relative;aspect-ratio:1/1;overflow:hidden;}
-.card-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s ease;}
+.card-img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.5s ease;background:var(--surface2);}
 .song-card:hover .card-img{transform:scale(1.07);}
 .card-overlay{position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,0.7) 100%);opacity:0;transition:var(--tr);}
 .card-play-btn{position:absolute;bottom:10px;right:10px;width:38px;height:38px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transform:scale(0.7);transition:var(--tr);box-shadow:0 4px 16px rgba(249,115,22,0.5);}
 .card-play-btn svg{width:15px;height:15px;fill:white;margin-left:2px;}
+.card-rank{position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;background:rgba(8,11,20,0.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:0.7rem;font-weight:800;color:var(--accent2);border:1px solid var(--border2);}
 .card-body{padding:0.85rem;}
 .card-title{font-size:0.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;}
 .card-artist{font-size:0.72rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -157,13 +163,24 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 
 /* ===== HOME SECTIONS ===== */
 .home-block{background:rgba(255,255,255,0.018);border:1px solid var(--border);border-radius:22px;padding:1.4rem;margin-bottom:1.5rem;}
+.home-block.rec-block{border-color:rgba(249,115,22,0.12);background:linear-gradient(135deg,rgba(249,115,22,0.025),rgba(255,255,255,0.018));}
 .status-card{background:var(--surface2);border:1px dashed var(--border2);border-radius:var(--radius);padding:1.2rem;color:var(--text3);font-size:0.85rem;text-align:center;}
+
+/* taste pills shown above recommendation rails */
+.taste-strip{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.1rem;}
+.taste-pill{display:flex;align-items:center;gap:5px;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);border-radius:var(--radius-pill);padding:0.3rem 0.75rem 0.3rem 0.55rem;font-size:0.73rem;font-weight:600;}
+.taste-pill .tp-bar{width:24px;height:4px;border-radius:99px;background:var(--surface3);overflow:hidden;position:relative;}
+.taste-pill .tp-bar::after{content:'';position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--accent2),var(--accent));width:var(--w,40%);}
+.taste-empty-hint{font-size:0.78rem;color:var(--text3);}
 
 /* ===== LOADER ===== */
 .loader-wrap{display:flex;justify-content:center;align-items:center;min-height:200px;flex-direction:column;gap:1rem;}
 .loader{width:44px;height:44px;border:3px solid var(--surface3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.9s linear infinite;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .loader-text{font-size:0.85rem;color:var(--text3);}
+.rail-loader{display:flex;gap:1.2rem;overflow:hidden;}
+.rail-skel{flex:0 0 170px;height:230px;border-radius:var(--radius);background:linear-gradient(100deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%);background-size:200% 100%;animation:skel-shine 1.4s ease-in-out infinite;}
+@keyframes skel-shine{to{background-position:-200% 0;}}
 
 /* ===== SEARCH RESULTS ===== */
 .results-section{display:none;}
@@ -178,7 +195,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 .mini-player{position:fixed;bottom:0;left:0;right:0;z-index:1000;transform:translateY(100%);transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);}
 .mini-player.visible{transform:translateY(0);}
 .mini-player-inner{background:rgba(8,11,20,0.95);backdrop-filter:blur(24px) saturate(180%);border-top:1px solid rgba(249,115,22,0.2);padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:var(--player-h);box-shadow:0 -12px 40px rgba(0,0,0,0.6);}
-.mp-thumb{width:50px;height:50px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
+.mp-thumb{width:50px;height:50px;border-radius:var(--radius-sm);object-fit:cover;flex-shrink:0;box-shadow:0 4px 12px rgba(0,0,0,0.5);background:var(--surface2);}
 .mp-info{flex:1;min-width:0;cursor:pointer;}
 .mp-title{font-size:0.9rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mp-artist{font-size:0.72rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
@@ -189,7 +206,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 .mp-play-btn{background:var(--accent)!important;color:white!important;width:44px!important;height:44px!important;border-radius:50%;}
 .mp-play-btn:hover{background:var(--accent2)!important;transform:scale(1.06);}
 
-/* Play/Pause icon animation */
 .play-icon-wrap{display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
 .play-icon-wrap svg{transition:opacity 0.15s, transform 0.15s;}
 
@@ -200,14 +216,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 .mp-slider::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;background:var(--accent);border-radius:50%;cursor:pointer;box-shadow:0 0 6px var(--accent-glow);opacity:0;transition:opacity 0.15s;}
 .mp-slider:hover::-webkit-slider-thumb{opacity:1;}
 
-/* Big expand arrow on mini player */
 .mp-expand-btn{width:44px;height:44px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:var(--tr);position:relative;overflow:hidden;}
 .mp-expand-btn:hover{border-color:var(--accent-glow);color:var(--accent);background:var(--accent-dim);}
 .mp-expand-btn svg{width:20px;height:20px;fill:currentColor;pointer-events:none;}
 
 .mp-quality{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-pill);padding:0.3rem 0.8rem;font-size:0.72rem;outline:none;cursor:pointer;font-family:inherit;}
 
-/* Mini player volume */
 .mp-vol-wrap{display:flex;align-items:center;gap:6px;min-width:100px;}
 .mp-vol-wrap svg{width:14px;height:14px;fill:var(--text3);flex-shrink:0;}
 .mp-vol{width:80px;height:3px;-webkit-appearance:none;appearance:none;background:linear-gradient(90deg,var(--accent) 0%,var(--accent) var(--vp,80%),rgba(255,255,255,0.1) var(--vp,80%),rgba(255,255,255,0.1) 100%);border-radius:99px;outline:none;cursor:pointer;}
@@ -219,7 +233,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 .max-bg{position:fixed;inset:0;background-size:cover;background-position:center;filter:blur(80px) brightness(0.25) saturate(200%);transform:scale(1.2);transition:background-image 0.6s ease;z-index:0;}
 .max-overlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(8,11,20,0.4) 0%,rgba(8,11,20,0.97) 100%);z-index:1;}
 
-/* Sticky close/scroll-up header */
 .max-header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.5rem 0.5rem;background:linear-gradient(180deg,rgba(8,11,20,0.95) 0%,transparent 100%);}
 .max-back-btn{width:48px;height:48px;border:1.5px solid var(--border2);background:rgba(20,24,38,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text);transition:var(--tr);position:relative;overflow:hidden;}
 .max-back-btn:hover{border-color:var(--accent-glow);color:var(--accent);}
@@ -227,7 +240,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 .max-header-title{font-family:'Space Grotesk',sans-serif;font-size:0.9rem;font-weight:700;color:var(--text2);letter-spacing:0.5px;text-transform:uppercase;}
 
 .max-inner{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:100%;padding:0.5rem 2rem 3rem;max-width:520px;margin:0 auto;text-align:center;}
-.max-art{width:280px;height:280px;border-radius:22px;object-fit:cover;box-shadow:0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.06);margin-bottom:1.8rem;transition:transform 0.3s ease;}
+.max-art{width:280px;height:280px;border-radius:22px;object-fit:cover;box-shadow:0 32px 80px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.06);margin-bottom:1.8rem;transition:transform 0.3s ease;background:var(--surface2);}
 .max-player.open .max-art{animation:art-float 3s ease-in-out infinite;}
 @keyframes art-float{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-8px) scale(1.01);}}
 .max-title{font-family:'Space Grotesk',sans-serif;font-size:1.6rem;font-weight:800;margin-bottom:0.4rem;letter-spacing:-0.3px;}
@@ -254,7 +267,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 .max-vol::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;background:white;border-radius:50%;cursor:pointer;}
 .max-quality{background:rgba(255,255,255,0.06);border:1px solid var(--border2);color:var(--text);border-radius:var(--radius-pill);padding:0.35rem 1rem;font-size:0.78rem;outline:none;font-family:inherit;cursor:pointer;width:100%;}
 
-/* Toggle active states */
 .max-ctrl.active{color:var(--accent);background:var(--accent-dim);}
 .max-action-btn.liked svg{fill:#ef4444;color:#ef4444;}
 
@@ -289,6 +301,7 @@ footer span{color:var(--accent);}
   .max-art{width:220px;height:220px;}
   .max-title{font-size:1.3rem;}
   .cards-grid{grid-template-columns:repeat(auto-fill,minmax(145px,1fr));}
+  .cards-row .song-card{flex:0 0 145px;}
   .mini-player-inner{gap:0.6rem;padding:0 0.8rem;}
   .mp-progress-wrap{display:none;}
   .mp-quality{display:none;}
@@ -351,6 +364,10 @@ footer span{color:var(--accent);}
 
   <div id="homeView">
     <div id="featuredRow" class="hero-section" style="display:none;"></div>
+
+    <!-- ============ PERSONALIZED RECOMMENDATION RAILS ============ -->
+    <!-- Populated entirely by the taste engine. Hidden until the user has searched at least once. -->
+    <div id="recommendationZone"></div>
 
     <div id="telugu-section" class="home-block">
       <div class="section-header">
@@ -421,7 +438,6 @@ footer span{color:var(--accent);}
       <option value="96">96 kbps</option>
       <option value="48">48 kbps</option>
     </select>
-    <!-- BIG expand arrow -->
     <button class="mp-expand-btn ripple-host" id="mpExpandBtn" title="Open full player" aria-label="Open full player">
       <svg viewBox="0 0 24 24"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" transform="rotate(-90 12 12)"/></svg>
     </button>
@@ -432,13 +448,12 @@ footer span{color:var(--accent);}
 <div class="max-player" id="maxPlayer" role="dialog" aria-modal="true" aria-label="Now Playing">
   <div class="max-bg" id="maxBg"></div>
   <div class="max-overlay"></div>
-  <!-- sticky header with back arrow -->
   <div class="max-header">
     <button class="max-back-btn ripple-host" id="maxClose" title="Close player" aria-label="Close player">
       <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
     </button>
     <span class="max-header-title">Now Playing</span>
-    <div style="width:48px;"></div><!-- spacer -->
+    <div style="width:48px;"></div>
   </div>
   <div class="max-inner">
     <img class="max-art" id="maxArt" src="" alt="cover">
@@ -489,14 +504,37 @@ footer span{color:var(--accent);}
 
 <div class="toast-container" id="toastContainer"></div>
 
+<!-- SEEK FLASH OVERLAYS -->
+<div class="seek-flash left"  id="seekFlashLeft">
+  <div class="seek-flash-inner">
+    <div class="seek-flash-arrows">
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    </div>
+    <div class="seek-flash-label">− 10s</div>
+  </div>
+</div>
+<div class="seek-flash right" id="seekFlashRight">
+  <div class="seek-flash-inner">
+    <div class="seek-flash-arrows">
+      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </div>
+    <div class="seek-flash-label">+ 10s</div>
+  </div>
+</div>
+
 <script>
-// =========== CONFIG ===========
+// =================================================================================
+// CONFIG
+// =================================================================================
 const API = 'https://saavn.sumit.co/api/search/songs';
 const MAX_HIST = 8;
 const PLAY_PATH  = 'M8 5v14l11-7z';
 const PAUSE_PATH = 'M6 19h4V5H6v14zm8-14v14h4V5h-4z';
 
-// Randomized section queries
 const QUERY_BANK = {
   telugu:   ['telugu new songs 2025','telugu trending hits','telugu romantic songs','telugu movie songs 2024','telugu love songs','tollywood blockbusters','telugu item songs','telugu mass hits'],
   hindi:    ['hindi new songs 2025','bollywood trending hits','hindi romantic songs','hindi love songs 2024','hindi blockbuster songs','latest hindi music','hindi party songs','hindi sad songs'],
@@ -509,7 +547,259 @@ function pickQuery(lang){
   return arr[Math.floor(Math.random()*arr.length)];
 }
 
-// =========== STATE ===========
+// =================================================================================
+// TASTE ENGINE — knowledge graph + signal extraction + scoring + query generation
+// =================================================================================
+//
+// The API gives us song/artist/language metadata only — no "era" or "mood" tags.
+// So the engine carries a small curated knowledge graph mapping known artists to
+// {era, mood, language, relatedArtists}. Unrecognized free text still contributes
+// raw keyword signals even when an artist isn't in the graph, so the system never
+// fully degrades to "no signal" — it just relies more on literal keyword echoes.
+const ARTIST_GRAPH = {
+  'S. P. Balasubrahmanyam': {aliases:['spb','balasubrahmanyam','s.p.balasubrahmanyam','sp balu'], language:'Telugu', era:'Classic', mood:'Melody',
+    related:['K. S. Chithra','S. Janaki','Ilaiyaraaja','Mano','K. J. Yesudas']},
+  'K. S. Chithra': {aliases:['chithra','k.s.chithra','ks chithra'], language:'Telugu', era:'Classic', mood:'Melody',
+    related:['S. P. Balasubrahmanyam','S. Janaki','Mano','K. J. Yesudas']},
+  'S. Janaki': {aliases:['janaki','s.janaki'], language:'Telugu', era:'Classic', mood:'Melody',
+    related:['S. P. Balasubrahmanyam','K. S. Chithra','Ilaiyaraaja']},
+  'Ilaiyaraaja': {aliases:['ilaiyaraaja','ilayaraja','raaja'], language:'Tamil', era:'Classic', mood:'Melody',
+    related:['S. P. Balasubrahmanyam','K. S. Chithra','S. Janaki','K. J. Yesudas']},
+  'K. J. Yesudas': {aliases:['yesudas','k.j.yesudas'], language:'Malayalam', era:'Classic', mood:'Melody',
+    related:['S. Janaki','K. S. Chithra','S. P. Balasubrahmanyam']},
+  'Mano': {aliases:['mano'], language:'Telugu', era:'Classic', mood:'Melody', related:['S. P. Balasubrahmanyam','K. S. Chithra']},
+  'A. R. Rahman': {aliases:['a.r.rahman','ar rahman','rahman'], language:'Tamil', era:'Modern Classic', mood:'Soulful',
+    related:['Hariharan','Sid Sriram','Shreya Ghoshal']},
+  'Sid Sriram': {aliases:['sid sriram'], language:'Telugu', era:'Contemporary', mood:'Soulful',
+    related:['A. R. Rahman','Anirudh Ravichander','Armaan Malik']},
+  'Anirudh Ravichander': {aliases:['anirudh'], language:'Tamil', era:'Contemporary', mood:'Mass/Energetic',
+    related:['Sid Sriram','Yuvan Shankar Raja']},
+  'Devi Sri Prasad': {aliases:['dsp','devi sri prasad'], language:'Telugu', era:'Contemporary', mood:'Mass/Energetic',
+    related:['Anirudh Ravichander','Thaman S']},
+  'Thaman S': {aliases:['thaman','s thaman'], language:'Telugu', era:'Contemporary', mood:'Mass/Energetic', related:['Devi Sri Prasad']},
+  'Shreya Ghoshal': {aliases:['shreya ghoshal','shreya'], language:'Hindi', era:'Contemporary', mood:'Romantic',
+    related:['Arijit Singh','Sunidhi Chauhan','A. R. Rahman']},
+  'Arijit Singh': {aliases:['arijit singh','arijit'], language:'Hindi', era:'Contemporary', mood:'Romantic',
+    related:['Shreya Ghoshal','Jubin Nautiyal','Armaan Malik']},
+  'Lata Mangeshkar': {aliases:['lata mangeshkar','lata'], language:'Hindi', era:'Classic', mood:'Melody',
+    related:['Kishore Kumar','Mohammed Rafi','Asha Bhosle']},
+  'Kishore Kumar': {aliases:['kishore kumar','kishore'], language:'Hindi', era:'Classic', mood:'Melody',
+    related:['Lata Mangeshkar','Mohammed Rafi']},
+  'Mohammed Rafi': {aliases:['mohammed rafi','rafi'], language:'Hindi', era:'Classic', mood:'Melody',
+    related:['Lata Mangeshkar','Kishore Kumar']},
+  'Vijay Yesudas': {aliases:['vijay yesudas'], language:'Malayalam', era:'Contemporary', mood:'Melody', related:['K. J. Yesudas']},
+  'Dulquer Salmaan': {aliases:['dulquer salmaan','dqsalmaan'], language:'Malayalam', era:'Contemporary', mood:'Romantic', related:['Vijay Yesudas']},
+};
+
+// flat alias → canonical-name lookup, built once
+const ALIAS_TO_ARTIST = {};
+Object.entries(ARTIST_GRAPH).forEach(([name,info])=>{
+  ALIAS_TO_ARTIST[name.toLowerCase()] = name;
+  (info.aliases||[]).forEach(a=>{ ALIAS_TO_ARTIST[a.toLowerCase()] = name; });
+});
+
+const LANGUAGE_KEYWORDS = {
+  Telugu:['telugu','tollywood'], Hindi:['hindi','bollywood'], Tamil:['tamil','kollywood'],
+  Malayalam:['malayalam','mollywood'], Kannada:['kannada','sandalwood'],
+};
+const ERA_KEYWORDS = {
+  Classic:['old','classic','90s','80s','retro','golden','evergreen'],
+  Contemporary:['new','2024','2025','2026','latest','trending'],
+};
+const MOOD_KEYWORDS = {
+  Melody:['melody','melodies','soulful','soothing'],
+  Romantic:['love','romantic','romance'],
+  'Mass/Energetic':['mass','party','dance','item','energetic','beats'],
+  Sad:['sad','breakup','emotional'],
+};
+
+// ---- Taste profile state: weighted signal buckets ----
+// Each bucket maps signal value -> accumulated score. Scores decay slightly for
+// older entries and grow with repetition, mirroring how a real recsys upweights
+// recurring signals without ever fully discarding history.
+function emptyProfile(){
+  return { artists:{}, languages:{}, eras:{}, moods:{}, rawTerms:{} };
+}
+let tasteProfile = emptyProfile();
+let searchLog = []; // [{query, songs:[...], ts}]
+
+const TP_KEY = 'rv_taste_profile';
+const SL_KEY = 'rv_search_log';
+
+function loadTasteState(){
+  try{
+    const p = sessionStorage.getItem(TP_KEY);
+    if(p) tasteProfile = JSON.parse(p);
+    const l = sessionStorage.getItem(SL_KEY);
+    if(l) searchLog = JSON.parse(l);
+  }catch(e){ tasteProfile = emptyProfile(); searchLog = []; }
+}
+function saveTasteState(){
+  try{
+    sessionStorage.setItem(TP_KEY, JSON.stringify(tasteProfile));
+    sessionStorage.setItem(SL_KEY, JSON.stringify(searchLog));
+  }catch(e){}
+}
+
+function bump(bucket, key, amount){
+  if(!key) return;
+  bucket[key] = (bucket[key]||0) + amount;
+}
+
+// Decay everything slightly before adding new weight, so older signals fade
+// but never vanish — a recent search should matter more than one from 20 queries ago.
+function decayProfile(){
+  const DECAY = 0.94;
+  ['artists','languages','eras','moods','rawTerms'].forEach(k=>{
+    Object.keys(tasteProfile[k]).forEach(key=>{ tasteProfile[k][key] *= DECAY; if(tasteProfile[k][key] < 0.5) delete tasteProfile[k][key]; });
+  });
+}
+
+// Extract signals from the literal query text itself (works even with zero API results)
+function extractTextSignals(query){
+  const q = query.toLowerCase();
+  const sig = {languages:[], eras:[], moods:[], artists:[], terms:[]};
+  Object.entries(LANGUAGE_KEYWORDS).forEach(([lang,words])=>{ if(words.some(w=>q.includes(w))) sig.languages.push(lang); });
+  Object.entries(ERA_KEYWORDS).forEach(([era,words])=>{ if(words.some(w=>q.includes(w))) sig.eras.push(era); });
+  Object.entries(MOOD_KEYWORDS).forEach(([mood,words])=>{ if(words.some(w=>q.includes(w))) sig.moods.push(mood); });
+  Object.entries(ALIAS_TO_ARTIST).forEach(([alias,canon])=>{ if(q.includes(alias)) sig.artists.push(canon); });
+  // keep meaningful raw tokens (drop tiny stopwords) as a fallback signal
+  q.split(/\s+/).filter(t=>t.length>3 && !['song','songs','music','telugu','hindi','tamil'].includes(t)).forEach(t=>sig.terms.push(t));
+  return sig;
+}
+
+// Extract signals from actual returned song metadata — this is the strongest
+// signal because it reflects what the user *actually* searched into existence,
+// not just words they typed.
+function extractSongSignals(songs){
+  const sig = {languages:[], artists:[]};
+  songs.slice(0,6).forEach(s=>{
+    if(s.language) sig.languages.push(s.language[0].toUpperCase()+s.language.slice(1));
+    (s.artists?.primary||[]).forEach(a=>{
+      const canon = ALIAS_TO_ARTIST[a.name?.toLowerCase()] || (ARTIST_GRAPH[a.name] ? a.name : null);
+      if(canon) sig.artists.push(canon);
+      else bump(tasteProfile.artists, a.name, 4); // unrecognized artist still tracked directly
+    });
+  });
+  return sig;
+}
+
+// Main entry point: call every time the user runs a search, feeding both the
+// query text and (once fetched) the resulting songs into the profile.
+function recordSearchSignal(query, songs){
+  decayProfile();
+  const textSig = extractTextSignals(query);
+  const songSig = songs ? extractSongSignals(songs) : {languages:[],artists:[]};
+
+  // Weights — tuned so a concrete artist match dominates a vague keyword match,
+  // and metadata-confirmed artists outweigh merely-typed artist names.
+  textSig.artists.forEach(a=>bump(tasteProfile.artists, a, 8));
+  songSig.artists.forEach(a=>bump(tasteProfile.artists, a, 12));
+  textSig.languages.forEach(l=>bump(tasteProfile.languages, l, 6));
+  songSig.languages.forEach(l=>bump(tasteProfile.languages, l, 5));
+  textSig.eras.forEach(e=>bump(tasteProfile.eras, e, 7));
+  textSig.moods.forEach(m=>bump(tasteProfile.moods, m, 7));
+  textSig.terms.forEach(t=>bump(tasteProfile.rawTerms, t, 3));
+
+  // If artists were identified, also inherit their known era/mood/language —
+  // this is the "Jabilli Kosam + Chiluka Kshemama -> SPB -> Telugu Classic Melody" leap.
+  [...textSig.artists, ...songSig.artists].forEach(a=>{
+    const info = ARTIST_GRAPH[a];
+    if(info){
+      bump(tasteProfile.languages, info.language, 4);
+      bump(tasteProfile.eras, info.era, 4);
+      bump(tasteProfile.moods, info.mood, 4);
+    }
+  });
+
+  searchLog.unshift({query, ts:Date.now(), songIds:(songs||[]).slice(0,5).map(s=>s.id), songTitles:(songs||[]).slice(0,3).map(s=>cleanName(s.name))});
+  searchLog = searchLog.slice(0,40);
+  saveTasteState();
+}
+
+function topEntries(bucket, n){
+  return Object.entries(bucket).sort((a,b)=>b[1]-a[1]).slice(0,n).filter(([,v])=>v>1);
+}
+
+function hasSignal(){
+  return Object.keys(tasteProfile.artists).length || Object.keys(tasteProfile.languages).length ||
+         Object.keys(tasteProfile.eras).length || Object.keys(tasteProfile.moods).length;
+}
+
+// ---- Query generation: turn scored signals into NEW discovery queries ----
+// This deliberately avoids ever re-issuing the literal searched title — the
+// bad-algorithm failure mode ("Jabilli Kosam Remix / DJ / Slowed") — by always
+// composing from the abstracted signal layer (artist/era/mood/language), never
+// from the raw query string.
+function buildRecommendationPlan(){
+  const topArtists  = topEntries(tasteProfile.artists, 3).map(([k])=>k);
+  const topLanguage = topEntries(tasteProfile.languages, 1).map(([k])=>k)[0];
+  const topEra       = topEntries(tasteProfile.eras, 1).map(([k])=>k)[0];
+  const topMood       = topEntries(tasteProfile.moods, 1).map(([k])=>k)[0];
+
+  const plan = { rails: [], tastePills: [] };
+
+  // "Because You Like {Artist}" — strongest, most specific rail
+  const primaryArtist = topArtists.find(a=>ARTIST_GRAPH[a]) || topArtists[0];
+  if(primaryArtist){
+    plan.rails.push({
+      key:'artist', title:`Because You Like ${primaryArtist}`,
+      sub:'Built from artists you keep searching for',
+      queries:[ `${primaryArtist} hits`, `${primaryArtist} best songs`, `${primaryArtist} top songs` ],
+    });
+  }
+
+  // "{Era} {Language} Melodies" — era+language combo rail
+  if(topEra || topLanguage){
+    const eraLabel = topEra || 'Classic';
+    const langLabel = topLanguage || 'Telugu';
+    plan.rails.push({
+      key:'era', title:`${eraLabel} ${langLabel} ${topMood==='Melody'||!topMood?'Melodies':topMood}`,
+      sub:`Matches the ${eraLabel.toLowerCase()} ${langLabel} sound you've been exploring`,
+      queries:[
+        `${eraLabel==='Classic'?'old':'new'} ${langLabel} ${topMood ? topMood.split('/')[0].toLowerCase() : 'melody'} songs`,
+        `${langLabel} ${eraLabel.toLowerCase()} hits`,
+        `${eraLabel==='Classic'?'90s':'2025'} ${langLabel} songs`,
+      ],
+    });
+  }
+
+  // "You Might Like" — related artists via the knowledge graph (collaborative-ish signal)
+  const relatedSet = new Set();
+  topArtists.forEach(a=>{ (ARTIST_GRAPH[a]?.related||[]).forEach(r=>{ if(!topArtists.includes(r)) relatedSet.add(r); }); });
+  if(relatedSet.size){
+    plan.rails.push({
+      key:'related', title:'You Might Like',
+      sub:'Listeners of your favorite artists also enjoy these',
+      queries:[...relatedSet].slice(0,3).map(a=>`${a} hits`),
+      perQueryLabel:true,
+    });
+  }
+
+  // Mood rail as a lighter-weight tertiary rail when a mood signal is strong but
+  // distinct from what era/artist rails already cover
+  if(topMood && topMood!=='Melody'){
+    plan.rails.push({
+      key:'mood', title:`${topMood.split('/')[0]} Picks`,
+      sub:`Tracking the ${topMood.toLowerCase()} mood in your recent searches`,
+      queries:[ `${topLanguage||'telugu'} ${topMood.split('/')[0].toLowerCase()} songs`, `${topMood.split('/')[0].toLowerCase()} hits ${topLanguage||''}`.trim() ],
+    });
+  }
+
+  // taste pills for the little "what we learned" strip
+  if(primaryArtist) plan.tastePills.push({label:primaryArtist, weight:tasteProfile.artists[primaryArtist]});
+  if(topLanguage) plan.tastePills.push({label:topLanguage, weight:tasteProfile.languages[topLanguage]});
+  if(topEra) plan.tastePills.push({label:topEra, weight:tasteProfile.eras[topEra]});
+  if(topMood) plan.tastePills.push({label:topMood, weight:tasteProfile.moods[topMood]});
+  const maxW = Math.max(1,...plan.tastePills.map(p=>p.weight));
+  plan.tastePills.forEach(p=>p.pct = Math.min(100, Math.round((p.weight/maxW)*100)));
+
+  return plan;
+}
+
+// =================================================================================
+// PLAYBACK STATE
+// =================================================================================
 let currentSong = null;
 let audio = null;
 let isPlaying = false;
@@ -523,10 +813,11 @@ let isLiked = false;
 let isLoop = false;
 let isRepeat = false;
 let volumeLevel = 0.8;
-// Persistence keys
 const SK = {song:'rv_song',pos:'rv_pos',vol:'rv_vol',qual:'rv_qual'};
 
-// =========== ELEMENTS ===========
+// =================================================================================
+// ELEMENTS
+// =================================================================================
 const miniPlayer    = document.getElementById('miniPlayer');
 const maxPlayer     = document.getElementById('maxPlayer');
 const maxBg         = document.getElementById('maxBg');
@@ -563,8 +854,11 @@ const searchResultsGrid = document.getElementById('searchResultsGrid');
 const resultsBadge  = document.getElementById('resultsBadge');
 const homeView      = document.getElementById('homeView');
 const featuredRow   = document.getElementById('featuredRow');
+const recommendationZone = document.getElementById('recommendationZone');
 
-// =========== UTILS ===========
+// =================================================================================
+// UTILS
+// =================================================================================
 function fmt(s){if(isNaN(s)||s<0)return'0:00';const m=Math.floor(s/60),sc=Math.floor(s%60);return`${m}:${sc<10?'0':''}${sc}`;}
 function esc(s){if(!s)return'';return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);}
 function cleanName(n){if(!n)return'Untitled';return n.replace(/\(From [^)]*\)/gi,'').replace(/\[[^\]]*\]/gi,'').replace(/&quot;/g,'"').replace(/&#\d+;/g,'').replace(/\s{2,}/g,' ').trim();}
@@ -572,11 +866,12 @@ function getBestImg(song){if(song.image&&song.image.length){const lg=song.image.
 function getUrl(song,q){if(!song.downloadUrl||!song.downloadUrl.length)return null;const found=song.downloadUrl.find(i=>i.quality===`${q}kbps`);if(found&&found.url)return found.url;return[...song.downloadUrl].sort((a,b)=>(parseInt(b.quality)||0)-(parseInt(a.quality)||0))[0]?.url||null;}
 function getArtist(song){return song.artists?.primary?.slice(0,2).map(a=>a.name).join(', ')||'Unknown Artist';}
 
-// =========== RIPPLE (properly confined) ===========
+// =================================================================================
+// RIPPLE
+// =================================================================================
 function addRipple(el){
   if(!el||el._rip)return;
   el._rip=true;
-  // ensure element clips ripple
   const cs=getComputedStyle(el);
   if(cs.position==='static'){el.style.position='relative';}
   el.style.overflow='hidden';
@@ -593,7 +888,9 @@ function addRipple(el){
   });
 }
 
-// =========== TOAST ===========
+// =================================================================================
+// TOAST
+// =================================================================================
 function toast(msg,icon='check'){
   const tc=document.getElementById('toastContainer');
   const t=document.createElement('div');
@@ -608,12 +905,13 @@ function toast(msg,icon='check'){
   setTimeout(()=>{t.style.animation='toast-out 0.3s ease forwards';setTimeout(()=>t.remove(),300);},2800);
 }
 
-// =========== PLAY ICON UPDATE ===========
+// =================================================================================
+// PLAY ICON
+// =================================================================================
 function updatePlayIcons(playing){
   const path = playing ? PAUSE_PATH : PLAY_PATH;
   mpPlayIcon.innerHTML  = `<path d="${path}"/>`;
   maxPlayIcon.innerHTML = `<path d="${path}"/>`;
-  // pulse animation on play button
   if(playing){
     mpPlayBtn.style.boxShadow='0 0 0 0 rgba(249,115,22,0.5)';
     mpPlayBtn.animate([
@@ -623,7 +921,9 @@ function updatePlayIcons(playing){
   }
 }
 
-// =========== AUDIO ===========
+// =================================================================================
+// AUDIO
+// =================================================================================
 function loadAndPlay(song, list, idx){
   if(!song)return;
   currentSong = song;
@@ -657,15 +957,12 @@ function loadAndPlay(song, list, idx){
 
   toast(name,'music');
 
-  // highlight active card
   document.querySelectorAll('.song-card.is-playing').forEach(c=>c.classList.remove('is-playing'));
   document.querySelectorAll(`[data-song-id="${song.id}"]`).forEach(c=>c.classList.add('is-playing'));
 
-  // pause all eq bars, activate this card's
   document.querySelectorAll('.eq-bars').forEach(eq=>eq.classList.add('paused'));
   document.querySelectorAll(`[data-song-id="${song.id}"] .eq-bars`).forEach(eq=>eq.classList.remove('paused'));
 
-  // persist
   try{ sessionStorage.setItem(SK.song,JSON.stringify(song)); sessionStorage.setItem(SK.pos,'0'); }catch(e){}
 }
 
@@ -678,7 +975,6 @@ function onTimeUpdate(){
   maxSlider.value = p;
   mpCurrent.textContent  = fmt(audio.currentTime);
   maxCurrent.textContent = fmt(audio.currentTime);
-  // persist position every ~5s
   if(Math.floor(audio.currentTime)%5===0){
     try{ sessionStorage.setItem(SK.pos, audio.currentTime); }catch(e){}
   }
@@ -688,7 +984,6 @@ function onMeta(){
   if(!audio)return;
   mpTotal.textContent  = fmt(audio.duration);
   maxTotal.textContent = fmt(audio.duration);
-  // restore persisted position
   try{
     const saved = parseFloat(sessionStorage.getItem(SK.pos)||'0');
     if(saved>2 && saved<audio.duration-2){ audio.currentTime=saved; }
@@ -711,7 +1006,6 @@ function playNext(){
 
 function playPrev(){
   if(!allSongsFlat.length)return;
-  // if >3s in, restart current; else go previous
   if(audio && audio.currentTime>3){ audio.currentTime=0; return; }
   const pi = isShuffle ? Math.floor(Math.random()*allSongsFlat.length) : (currentIndex-1+allSongsFlat.length)%allSongsFlat.length;
   loadAndPlay(allSongsFlat[pi], null, pi);
@@ -736,11 +1030,6 @@ function togglePlay(){
     isPlaying ? eq.classList.remove('paused') : eq.classList.add('paused');
   });
 }
-  // pause/play eq bars on all active cards
-  document.querySelectorAll(`[data-song-id="${currentSong?.id}"] .eq-bars`).forEach(eq=>{
-    isPlaying ? eq.classList.remove('paused') : eq.classList.add('paused');
-  });
-
 
 function seekTo(pct){
   if(!audio||!audio.duration)return;
@@ -773,7 +1062,9 @@ function setVolume(v){
   try{ sessionStorage.setItem(SK.vol,v); }catch(e){}
 }
 
-// =========== PLAYER CONTROLS ===========
+// =================================================================================
+// PLAYER CONTROLS
+// =================================================================================
 mpPlayBtn.onclick  = togglePlay;
 maxPlayBtn.onclick = togglePlay;
 document.getElementById('mpPrev').onclick  = playPrev;
@@ -812,14 +1103,16 @@ maxLoopBtn.onclick=()=>{
   toast(isLoop?'Loop on — looping this song':'Loop off');
 };
 
-// =========== EXPAND / COLLAPSE ===========
+// =================================================================================
+// EXPAND / COLLAPSE
+// =================================================================================
 mpExpandBtn.onclick = openMaxPlayer;
 maxClose.onclick    = closeMaxPlayer;
 document.getElementById('mpInfoClick').onclick = openMaxPlayer;
 
 function openMaxPlayer(){
   maxPlayer.classList.add('open');
-  maxPlayer.scrollTop=0;          // always scroll to top when opening
+  maxPlayer.scrollTop=0;
   document.body.style.overflow='hidden';
 }
 
@@ -830,41 +1123,44 @@ function closeMaxPlayer(){
 
 maxPlayer.addEventListener('click',e=>{ if(e.target===maxPlayer) closeMaxPlayer(); });
 
+let seekFlashTimer = null;
+function showSeekFlash(dir){
+  const el = dir==='left'
+    ? document.getElementById('seekFlashLeft')
+    : document.getElementById('seekFlashRight');
+  const inner = el.querySelector('.seek-flash-inner');
+  const clone = inner.cloneNode(true);
+  el.replaceChild(clone, inner);
+  el.classList.add('show');
+  clearTimeout(seekFlashTimer);
+  seekFlashTimer = setTimeout(()=>el.classList.remove('show'), 600);
+}
+
 document.addEventListener('keydown',e=>{
   if(document.activeElement.tagName==='INPUT') return;
   if(e.code==='Space'){ e.preventDefault(); togglePlay(); }
   if(e.code==='Escape') closeMaxPlayer();
   if(maxPlayer.classList.contains('open')){
-    // In full-screen player: arrows seek ±10s
     if(e.code==='ArrowRight'){
       e.preventDefault();
       if(audio&&audio.duration) audio.currentTime=Math.min(audio.duration,audio.currentTime+10);
+      showSeekFlash('right');
     }
     if(e.code==='ArrowLeft'){
       e.preventDefault();
       if(audio) audio.currentTime=Math.max(0,audio.currentTime-10);
+      showSeekFlash('left');
     }
   } else {
-    // Mini player / home: arrows change track
     if(e.code==='ArrowRight'){ e.preventDefault(); playNext(); }
     if(e.code==='ArrowLeft'){  e.preventDefault(); playPrev(); }
   }
 });
-if(maxPlayer.classList.contains('open')){
-  if(e.code==='ArrowRight'){
-    e.preventDefault();
-    if(audio&&audio.duration) audio.currentTime=Math.min(audio.duration,audio.currentTime+10);
-    showSeekFlash('right');   // ← ADD THIS
-  }
-  if(e.code==='ArrowLeft'){
-    e.preventDefault();
-    if(audio) audio.currentTime=Math.max(0,audio.currentTime-10);
-    showSeekFlash('left');    // ← ADD THIS
-  }
-}
 
-// =========== CARDS ===========
-function buildCard(song, list, idx){
+// =================================================================================
+// CARDS
+// =================================================================================
+function buildCard(song, list, idx, rankBadge){
   const img  = getBestImg(song);
   const dur  = Number(song.duration)||0;
   const dStr = `${Math.floor(dur/60)}:${String(dur%60).padStart(2,'0')}`;
@@ -877,6 +1173,7 @@ function buildCard(song, list, idx){
     <div class="card-img-wrap">
       <img class="card-img" src="${img}" alt="${esc(name)}" loading="lazy">
       <div class="card-overlay"></div>
+      ${rankBadge!=null?`<div class="card-rank">${rankBadge}</div>`:''}
       <div class="card-play-btn"><svg viewBox="0 0 24 24"><path d="${PLAY_PATH}"/></svg></div>
     </div>
     <div class="card-body">
@@ -894,16 +1191,18 @@ function buildCard(song, list, idx){
   return card;
 }
 
-function renderGrid(songs, container){
+function renderGrid(songs, container, useRowLayout){
   if(!container)return;
   container.innerHTML='';
   if(!songs.length){ container.innerHTML='<div class="status-card">No songs found.</div>'; return; }
   const frag=document.createDocumentFragment();
-  songs.forEach((s,i)=>frag.appendChild(buildCard(s,songs,i)));
+  songs.forEach((s,i)=>frag.appendChild(buildCard(s,songs,i, useRowLayout?i+1:null)));
   container.appendChild(frag);
 }
 
-// =========== API ===========
+// =================================================================================
+// API
+// =================================================================================
 async function fetchSongs(query){
   const r=await fetch(`${API}?query=${encodeURIComponent(query)}&limit=30`);
   if(!r.ok) throw new Error('Network error');
@@ -914,7 +1213,9 @@ async function fetchSongs(query){
   return [...map.values()];
 }
 
-// =========== HOME ===========
+// =================================================================================
+// HOME
+// =================================================================================
 async function loadHomeSections(){
   featuredRow.style.display='none';
   const sections=[
@@ -939,12 +1240,11 @@ async function loadHomeSections(){
     }
   });
   await Promise.all(promises);
-  // dedupe
   const seen=new Set();
   allSongsFlat=allSongsFlat.filter(s=>{ if(seen.has(s.id))return false; seen.add(s.id); return true; });
 
-  // restore session
   restoreSession();
+  renderRecommendationZone();
 }
 
 function buildFeatured(songs){
@@ -968,7 +1268,104 @@ function buildFeatured(songs){
   featuredRow.style.display='grid';
 }
 
-// =========== PERSIST / RESTORE ===========
+// =================================================================================
+// RECOMMENDATION ZONE — renders "Continue Listening" + the taste-engine rails
+// =================================================================================
+async function renderRecommendationZone(){
+  recommendationZone.innerHTML='';
+
+  // ---- Continue Listening: literally the last few searched/played songs ----
+  const recentSongs = [];
+  const seenIds = new Set();
+  for(const entry of searchLog){
+    for(const id of entry.songIds||[]){
+      if(seenIds.has(id)) continue;
+      const found = allSongsFlat.find(s=>s.id===id);
+      if(found){ recentSongs.push(found); seenIds.add(id); }
+    }
+    if(recentSongs.length>=8) break;
+  }
+  if(recentSongs.length){
+    const block = document.createElement('div');
+    block.className='home-block';
+    block.innerHTML=`
+      <div class="section-header">
+        <div class="section-label"><div class="dot"></div><h2>⏪ Continue Listening</h2></div>
+        <span class="section-count">${recentSongs.length} tracks</span>
+      </div>
+      <div class="cards-row" id="rail-continue"></div>`;
+    recommendationZone.appendChild(block);
+    renderGrid(recentSongs.slice(0,10), block.querySelector('#rail-continue'));
+  }
+
+  if(!hasSignal()) return; // nothing learned yet — skip personalized rails entirely
+
+  const plan = buildRecommendationPlan();
+  if(!plan.rails.length) return;
+
+  // ---- Taste strip: shows what the engine has learned, transparently ----
+  if(plan.tastePills.length){
+    const stripWrap = document.createElement('div');
+    stripWrap.className='home-block rec-block';
+    stripWrap.innerHTML=`
+      <div class="section-header" style="margin-bottom:0.8rem;">
+        <div class="section-label"><div class="dot"></div><h2>🧠 Tuned to your taste</h2></div>
+      </div>
+      <div class="taste-strip" id="tasteStrip"></div>`;
+    recommendationZone.appendChild(stripWrap);
+    const strip = stripWrap.querySelector('#tasteStrip');
+    plan.tastePills.forEach(p=>{
+      const pill=document.createElement('div');
+      pill.className='taste-pill';
+      pill.innerHTML=`<span>${esc(p.label)}</span><span class="tp-bar" style="--w:${p.pct}%"></span>`;
+      strip.appendChild(pill);
+    });
+  }
+
+  // ---- One rail per plan entry, fetched in parallel, rendered as it arrives ----
+  const railEls = plan.rails.map(rail=>{
+    const block=document.createElement('div');
+    block.className='home-block rec-block';
+    block.innerHTML=`
+      <div class="section-header">
+        <div class="section-label" style="flex-direction:column;align-items:flex-start;gap:0;">
+          <div style="display:flex;align-items:center;gap:0.6rem;"><div class="dot"></div><h2>${esc(rail.title)}</h2></div>
+          <div class="section-sub">${esc(rail.sub)}</div>
+        </div>
+        <span class="section-count" data-count></span>
+      </div>
+      <div class="cards-row" data-rail></div>`;
+    recommendationZone.appendChild(block);
+    block.querySelector('[data-rail]').innerHTML = `<div class="rail-loader">${'<div class="rail-skel"></div>'.repeat(5)}</div>`;
+    return {rail, block};
+  });
+
+  await Promise.all(railEls.map(async ({rail,block})=>{
+    const railTarget = block.querySelector('[data-rail]');
+    const countTarget = block.querySelector('[data-count]');
+    try{
+      // fan out the generated discovery queries, merge + dedupe results
+      const batches = await Promise.all(rail.queries.map(q=>fetchSongs(q).catch(()=>[])));
+      const merged = new Map();
+      batches.forEach((songs,bi)=>{
+        songs.slice(0,8).forEach(s=>{ if(!merged.has(s.id)) merged.set(s.id, s); });
+      });
+      let combined = [...merged.values()];
+      // light shuffle so the rail doesn't always echo query order exactly
+      combined = combined.sort(()=>Math.random()-0.5).slice(0,12);
+      if(!combined.length){ block.remove(); return; }
+      allSongsFlat=[...allSongsFlat, ...combined];
+      renderGrid(combined, railTarget);
+      countTarget.textContent = `${combined.length} tracks`;
+    }catch(e){
+      railTarget.innerHTML = '<div class="status-card">Could not load this rail.</div>';
+    }
+  }));
+}
+
+// =================================================================================
+// PERSIST / RESTORE
+// =================================================================================
 function restoreSession(){
   try{
     const savedSong = sessionStorage.getItem(SK.song);
@@ -985,7 +1382,6 @@ function restoreSession(){
     if(!url) return;
 
     currentSong=song;
-    // find in allSongsFlat
     const idx=allSongsFlat.findIndex(s=>s.id===song.id);
     currentIndex=idx>=0?idx:0;
 
@@ -1004,14 +1400,15 @@ function restoreSession(){
     audio.addEventListener('timeupdate',onTimeUpdate);
     audio.addEventListener('loadedmetadata',()=>{ if(savedPos>2) audio.currentTime=savedPos; });
     audio.addEventListener('ended',onEnded);
-    // do NOT auto-play on restore — let user decide
     isPlaying=false;
     updatePlayIcons(false);
     toast(`Restored: ${name}`,'music');
   }catch(e){ /* silent */ }
 }
 
-// =========== SEARCH ===========
+// =================================================================================
+// SEARCH
+// =================================================================================
 async function runSearch(query){
   const q=(query||'').trim();
   if(!q) return;
@@ -1027,11 +1424,15 @@ async function runSearch(query){
     renderGrid(songs,searchResultsGrid);
     resultsBadge.textContent=`${songs.length} tracks`;
     document.getElementById('resultsCountLabel').textContent=`${songs.length} results`;
-    allSongsFlat=songs;
+    allSongsFlat=[...allSongsFlat, ...songs];
     currentIndex=0;
+
+    // feed the taste engine — this is what powers the home-screen recommendations
+    recordSearchSignal(q, songs);
   }catch(err){
     searchResultsGrid.innerHTML='<div class="status-card">Search failed. Try again.</div>';
     document.getElementById('resultsCountLabel').textContent='Error';
+    recordSearchSignal(q, []); // even a failed fetch still teaches the engine from query text
   }
 }
 
@@ -1043,6 +1444,7 @@ function showHome(e){
   document.getElementById('activeQueryLabel').textContent='Explore curated picks';
   document.getElementById('resultsCountLabel').textContent='';
   document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.textContent.trim()==='Home'));
+  renderRecommendationZone(); // refresh rails — taste may have updated since last view
 }
 
 searchForm.addEventListener('submit',e=>{
@@ -1050,12 +1452,28 @@ searchForm.addEventListener('submit',e=>{
   const v=searchInput.value.trim();
   if(v) runSearch(v);
 });
-searchInput.addEventListener('input',()=>{
-  const v=searchInput.value.trim();
-  if(!v){ showHome(); return; }
-  runSearch(v);
+let searchTimer;
+
+searchInput.addEventListener('input', () => {
+  const v = searchInput.value.trim();
+
+  clearTimeout(searchTimer);
+
+  if (!v) {
+    showHome();
+    return;
+  }
+
+  if (v.length < 2) return;
+
+  searchTimer = setTimeout(() => {
+    runSearch(v);
+  }, 300);
 });
-// =========== HISTORY ===========
+
+// =================================================================================
+// HISTORY (chips row)
+// =================================================================================
 function addToHistory(q){
   if(!q)return;
   historyArr=[q,...historyArr.filter(h=>h.toLowerCase()!==q.toLowerCase())].slice(0,MAX_HIST);
@@ -1084,25 +1502,16 @@ function scrollToSection(id, e){
   document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));
   if(e&&e.target) e.target.classList.add('active');
 }
-// ===== SEEK FLASH =====
-let seekFlashTimer = null;
-function showSeekFlash(dir){
-  const el = dir==='left'
-    ? document.getElementById('seekFlashLeft')
-    : document.getElementById('seekFlashRight');
-  // reset by cloning inner to re-trigger animations
-  const inner = el.querySelector('.seek-flash-inner');
-  const clone = inner.cloneNode(true);
-  el.replaceChild(clone, inner);
-  el.classList.add('show');
-  clearTimeout(seekFlashTimer);
-  seekFlashTimer = setTimeout(()=>el.classList.remove('show'), 600);
-}
-// =========== RIPPLE INIT ===========
+
+// =================================================================================
+// RIPPLE INIT
+// =================================================================================
 document.querySelectorAll('.mp-btn,.max-ctrl,.max-action-btn,.search-btn,.nav-pill,.mp-expand-btn,.max-back-btn').forEach(addRipple);
 
-// =========== INIT ===========
-// restore persisted quality/vol early
+// =================================================================================
+// INIT
+// =================================================================================
+loadTasteState();
 try{
   const q=sessionStorage.getItem(SK.qual); if(q){ quality=q; mpQuality.value=q; maxQuality.value=q; }
   const v=sessionStorage.getItem(SK.vol);  if(v){ setVolume(parseFloat(v)); }
@@ -1110,26 +1519,5 @@ try{
 
 loadHomeSections();
 </script>
-<!-- SEEK FLASH OVERLAYS -->
-<div class="seek-flash left"  id="seekFlashLeft">
-  <div class="seek-flash-inner">
-    <div class="seek-flash-arrows">
-      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-      <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-    </div>
-    <div class="seek-flash-label">− 10s</div>
-  </div>
-</div>
-<div class="seek-flash right" id="seekFlashRight">
-  <div class="seek-flash-inner">
-    <div class="seek-flash-arrows">
-      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-      <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-    </div>
-    <div class="seek-flash-label">+ 10s</div>
-  </div>
-</div>
 </body>
 </html>
