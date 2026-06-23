@@ -2,16 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<link rel="dns-prefetch" href="//fonts.googleapis.com">
-<link rel="dns-prefetch" href="//fonts.gstatic.com">
-<link rel="dns-prefetch" href="//saavn.sumit.co">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://saavn.sumit.co" crossorigin>
-<meta http-equiv="Cache-Control" content="public, max-age=31536000">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 <title>RhythmVerse</title>
-<link rel="preload"       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700;800&display=swap"       as="style">  <link rel="stylesheet"       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700;800&display=swap">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #080b14;
@@ -130,6 +123,25 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:1.5rem
 .suggest-text{flex:1;min-width:0;font-size:0.86rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .suggest-text b{color:var(--accent2);font-weight:700;}
 .suggest-tag{font-size:0.66rem;color:var(--text3);background:var(--surface3);padding:2px 7px;border-radius:var(--radius-pill);flex-shrink:0;}
+
+/* ===== HISTORY VIEW ===== */
+.history-date-group{margin-bottom:1.6rem;}
+.history-date-label{font-family:'Space Grotesk',sans-serif;font-size:0.85rem;font-weight:700;color:var(--text2);margin-bottom:0.7rem;padding-left:0.2rem;display:flex;align-items:center;gap:8px;}
+.history-date-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.history-row{display:flex;align-items:center;gap:1rem;padding:0.7rem 0.9rem;border-radius:var(--radius-sm);cursor:pointer;transition:var(--tr);position:relative;overflow:hidden;}
+.history-row:hover{background:var(--surface2);}
+.history-row + .history-row{border-top:1px solid var(--border);}
+.history-thumb{width:46px;height:46px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--surface2);}
+.history-info{flex:1;min-width:0;}
+.history-title{font-size:0.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.history-artist{font-size:0.74rem;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.history-meta{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.history-time{font-size:0.74rem;color:var(--text3);font-family:'Space Grotesk',sans-serif;min-width:64px;text-align:right;}
+.history-replay{font-size:0.68rem;color:var(--accent2);background:var(--accent-dim);padding:2px 7px;border-radius:var(--radius-pill);flex-shrink:0;}
+.history-completed{width:7px;height:7px;border-radius:50%;background:#4ade80;flex-shrink:0;box-shadow:0 0 5px rgba(74,222,128,0.6);}
+.history-completed.incomplete{background:var(--text3);box-shadow:none;}
+.history-empty{text-align:center;padding:3rem 1rem;color:var(--text3);}
+.history-empty svg{width:48px;height:48px;fill:var(--text3);opacity:0.4;margin-bottom:1rem;}
 
 /* ===== SECTION ===== */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin:2rem 0 1.1rem;gap:1rem;}
@@ -347,6 +359,7 @@ footer span{color:var(--accent);}
     </a>
     <div class="nav-pills">
       <button class="nav-pill active" onclick="showHome(event)">Home</button>
+      <button class="nav-pill" onclick="showHistory(event)">History</button>
       <button class="nav-pill" onclick="scrollToSection('telugu-section',event)">Telugu</button>
       <button class="nav-pill" onclick="scrollToSection('hindi-section',event)">Hindi</button>
       <button class="nav-pill" onclick="scrollToSection('tamil-section',event)">Tamil</button>
@@ -380,6 +393,17 @@ footer span{color:var(--accent);}
       <span class="section-count" id="resultsBadge">0 tracks</span>
     </div>
     <div class="cards-grid" id="searchResultsGrid"></div>
+  </div>
+
+  <div class="results-section" id="historySection">
+    <div class="section-header">
+      <div class="section-label">
+        <div class="dot"></div>
+        <h2>🕘 Listening History</h2>
+      </div>
+      <button class="chip ripple-host" id="clearHistoryBtn" style="color:#f87171;border-color:rgba(239,68,68,0.3);">Clear history</button>
+    </div>
+    <div id="historyList"></div>
   </div>
 
   <div id="homeView">
@@ -638,33 +662,56 @@ const MOOD_KEYWORDS = {
 // older entries and grow with repetition, mirroring how a real recsys upweights
 // recurring signals without ever fully discarding history.
 function emptyProfile(){
-  return { artists:{}, languages:{}, eras:{}, moods:{}, rawTerms:{} };
+  return {
+    artists:{}, languages:{}, eras:{}, moods:{}, rawTerms:{},
+    // ---- NEW factors, layered on top of the existing five buckets ----
+    timeOfDay:{},          // 'Morning'|'Afternoon'|'Evening'|'Night' -> weight, learned from when you actually play music
+    coOccurringArtists:{}, // 'ArtistA::ArtistB' -> weight, learned from artists played close together in one session (covers artists outside the curated graph)
+  };
 }
 let tasteProfile = emptyProfile();
 let searchLog = []; // [{query, songs:[...], ts}]
-let playLog = []; // [{songId, title, artist, ts}] — every song actually pressed play on
+// playLog: every song actually pressed play on. Each entry now carries a real
+// timestamp (ts, epoch ms) plus a human-readable dateLabel/timeLabel pair
+// (computed at record time so History always displays correctly even if the
+// browser's locale changes later), a completed flag (did it play through),
+// and playCount (incremented on repeat plays of the same song).
+let playLog = []; // [{songId, title, artist, img, ts, dateLabel, timeLabel, completed, playCount}]
 
 const TP_KEY = 'rv_taste_profile';
 const SL_KEY = 'rv_search_log';
 const PL_KEY = 'rv_play_log';
 
+// Recent-artists queue, kept in memory only (not persisted) — used purely to
+// detect "these two artists were played close together" within the current
+// browsing session, which feeds the new coOccurringArtists factor below.
+const RECENT_ARTIST_WINDOW = 4;
+let recentArtistQueue = [];
+
 function loadTasteState(){
   try{
-    const p = sessionStorage.getItem(TP_KEY);
-    if(p) tasteProfile = JSON.parse(p);
-    const l = sessionStorage.getItem(SL_KEY);
+    const p = localStorage.getItem(TP_KEY);
+    if(p){
+      const parsed = JSON.parse(p);
+      // Backfill-safe merge: a profile saved before this update won't have
+      // timeOfDay/coOccurringArtists yet — merge onto a fresh empty profile
+      // so every bucket always exists and bump() never hits undefined.
+      tasteProfile = Object.assign(emptyProfile(), parsed);
+    }
+    const l = localStorage.getItem(SL_KEY);
     if(l) searchLog = JSON.parse(l);
-    const pl = sessionStorage.getItem(PL_KEY);
+    const pl = localStorage.getItem(PL_KEY);
     if(pl) playLog = JSON.parse(pl);
   }catch(e){ tasteProfile = emptyProfile(); searchLog = []; playLog = []; }
 }
 function saveTasteState(){
   try{
-    sessionStorage.setItem(TP_KEY, JSON.stringify(tasteProfile));
-    sessionStorage.setItem(SL_KEY, JSON.stringify(searchLog));
-    sessionStorage.setItem(PL_KEY, JSON.stringify(playLog));
+    localStorage.setItem(TP_KEY, JSON.stringify(tasteProfile));
+    localStorage.setItem(SL_KEY, JSON.stringify(searchLog));
+    localStorage.setItem(PL_KEY, JSON.stringify(playLog));
   }catch(e){}
 }
+
 
 function bump(bucket, key, amount){
   if(!key) return;
@@ -774,9 +821,101 @@ function recordPlaySignal(song){
   // versions or compilation albums) gets the same treatment as a typed search
   titleSig.artists.forEach(a=>bump(tasteProfile.artists, a, 4));
 
-  playLog.unshift({songId:song.id, title:cleanName(song.name), artist:getArtist(song), ts:Date.now()});
-  playLog = playLog.slice(0,60);
+  // ---- NEW FACTOR 1: time-of-day listening pattern ----
+  // People often want different moods at different times (energetic in the
+  // morning, melodic at night). This bucket learns that pattern purely from
+  // when you actually press play — no typing required.
+  const tod = timeOfDayLabel(new Date());
+  bump(tasteProfile.timeOfDay, tod, 4);
+
+  // ---- NEW FACTOR 2: artist co-occurrence within a session ----
+  // If you play Artist A and then, a few songs later, Artist B, that's a soft
+  // signal those two go together for you — even if neither is in the curated
+  // ARTIST_GRAPH. This widens "You Might Like" beyond the hand-curated list.
+  songSig.artists.forEach(a=>{
+    recentArtistQueue.filter(prev=>prev!==a).forEach(prev=>{
+      const key = [prev,a].sort().join('::');
+      bump(tasteProfile.coOccurringArtists, key, 3);
+    });
+    recentArtistQueue.unshift(a);
+    recentArtistQueue = recentArtistQueue.slice(0, RECENT_ARTIST_WINDOW);
+  });
+
+  // ---- Rich play-history entry (powers the History view) ----
+  // Replay detection: if this exact song already has a recent entry, bump its
+  // playCount and give it an extra taste-weight boost — repeat listening is
+  // the single strongest taste signal a recsys can get, stronger than any
+  // search or first-time click.
+  const existing = playLog.find(p=>p.songId===song.id);
+  if(existing){
+    existing.playCount = (existing.playCount||1) + 1;
+    songSig.artists.forEach(a=>bump(tasteProfile.artists, a, 6)); // replay bonus
+    bump(tasteProfile.languages, songSig.languages[0], 3);
+  }
+  const now = new Date();
+  playLog.unshift({
+    songId: song.id,
+    title: cleanName(song.name),
+    artist: getArtist(song),
+    img: getBestImg(song),
+    ts: now.getTime(),
+    dateLabel: formatHistoryDate(now),
+    timeLabel: formatHistoryTime(now),
+    completed: false, // flipped to true by recordCompletionSignal() if the song plays through
+    playCount: existing ? existing.playCount : 1,
+  });
+  // dedupe: keep only the newest entry per song so History shows latest play time, not every repeat
+  const seenHist = new Set();
+  playLog = playLog.filter(p=>{ if(seenHist.has(p.songId)) return false; seenHist.add(p.songId); return true; });
+  playLog = playLog.slice(0,150);
   saveTasteState();
+}
+
+// ---- NEW FACTOR 3: completion vs skip ----
+// Called from onEnded() when a song actually plays through to the end — the
+// strongest positive signal available, well above a mere click. Also called
+// (with a smaller, skip-aware weight) when the user navigates away early.
+function recordCompletionSignal(song, playedThroughFully){
+  if(!song) return;
+  const songSig = extractSongSignals([song], playedThroughFully?8:0);
+  if(playedThroughFully){
+    songSig.artists.forEach(a=>bump(tasteProfile.artists, a, 10)); // completion bonus, on top of the initial play-click weight
+    songSig.languages.forEach(l=>bump(tasteProfile.languages, l, 5));
+    songSig.artists.forEach(a=>{
+      const info = ARTIST_GRAPH[a];
+      if(info){
+        bump(tasteProfile.languages, info.language, 3);
+        bump(tasteProfile.eras, info.era, 3);
+        bump(tasteProfile.moods, info.mood, 3);
+      }
+    });
+    const entry = playLog.find(p=>p.songId===song.id);
+    if(entry) entry.completed = true;
+    saveTasteState();
+  }
+  // Skips are intentionally NOT a negative signal here — we don't subtract
+  // weight anywhere in this engine (no decay, nothing ever goes down), so a
+  // skip simply means "no completion bonus was earned," which already makes
+  // it weigh less than a completed listen without needing to punish it.
+}
+
+function timeOfDayLabel(d){
+  const h = d.getHours();
+  if(h>=5 && h<12) return 'Morning';
+  if(h>=12 && h<17) return 'Afternoon';
+  if(h>=17 && h<21) return 'Evening';
+  return 'Night';
+}
+function formatHistoryDate(d){
+  const today = new Date();
+  const yest = new Date(); yest.setDate(today.getDate()-1);
+  const sameDay = (a,b)=>a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  if(sameDay(d,today)) return 'Today';
+  if(sameDay(d,yest)) return 'Yesterday';
+  return d.toLocaleDateString(undefined, {day:'numeric', month:'short', year: d.getFullYear()!==today.getFullYear() ? 'numeric' : undefined});
+}
+function formatHistoryTime(d){
+  return d.toLocaleTimeString(undefined, {hour:'numeric', minute:'2-digit'});
 }
 
 function topEntries(bucket, n){
@@ -798,6 +937,8 @@ function buildRecommendationPlan(){
   const topLanguage = topEntries(tasteProfile.languages, 1).map(([k])=>k)[0];
   const topEra       = topEntries(tasteProfile.eras, 1).map(([k])=>k)[0];
   const topMood       = topEntries(tasteProfile.moods, 1).map(([k])=>k)[0];
+  const topTimeOfDay  = topEntries(tasteProfile.timeOfDay, 1).map(([k])=>k)[0];
+  const currentTimeOfDay = timeOfDayLabel(new Date());
 
   const plan = { rails: [], tastePills: [] };
 
@@ -806,7 +947,7 @@ function buildRecommendationPlan(){
   if(primaryArtist){
     plan.rails.push({
       key:'artist', title:`Because You Like ${primaryArtist}`,
-      sub:'Built from artists you keep searching for',
+      sub:'Built from artists you keep searching for and playing',
       queries:[ `${primaryArtist} hits`, `${primaryArtist} best songs`, `${primaryArtist} top songs` ],
     });
   }
@@ -826,9 +967,17 @@ function buildRecommendationPlan(){
     });
   }
 
-  // "You Might Like" — related artists via the knowledge graph (collaborative-ish signal)
+  // "You Might Like" — related artists via BOTH the curated knowledge graph
+  // AND the new coOccurringArtists factor (artists you happen to play close
+  // together in real sessions, even if they're not in the hand-curated graph).
+  // This makes the rail learn relationships the graph alone never could.
   const relatedSet = new Set();
   topArtists.forEach(a=>{ (ARTIST_GRAPH[a]?.related||[]).forEach(r=>{ if(!topArtists.includes(r)) relatedSet.add(r); }); });
+  topEntries(tasteProfile.coOccurringArtists, 6).forEach(([pairKey])=>{
+    const [a,b] = pairKey.split('::');
+    if(topArtists.includes(a) && !topArtists.includes(b)) relatedSet.add(b);
+    if(topArtists.includes(b) && !topArtists.includes(a)) relatedSet.add(a);
+  });
   if(relatedSet.size){
     plan.rails.push({
       key:'related', title:'You Might Like',
@@ -861,13 +1010,27 @@ function buildRecommendationPlan(){
     });
   }
 
+  // "Right Now For You" — NEW: time-of-day rail. Only shown when the time
+  // bucket you're in right now (Morning/Afternoon/Evening/Night) actually has
+  // learned weight, so it doesn't fire with generic guesses on a first visit.
+  if(topTimeOfDay && tasteProfile.timeOfDay[currentTimeOfDay] > 1){
+    const todMoodWord = currentTimeOfDay==='Morning' ? 'fresh' : currentTimeOfDay==='Night' ? 'soothing' : currentTimeOfDay==='Evening' ? 'relaxing' : 'energetic';
+    plan.rails.push({
+      key:'timeofday', title:`Right Now For You — ${currentTimeOfDay}`,
+      sub:`Based on what you usually play in the ${currentTimeOfDay.toLowerCase()}`,
+      queries:[ `${topLanguage||'telugu'} ${todMoodWord} songs`, `${todMoodWord} ${topLanguage||'telugu'} hits` ],
+    });
+  }
+
   // taste pills for the little "what we learned" strip — now reflects ALL
-  // weighted buckets (artist, language, era, mood, AND raw search terms)
+  // weighted buckets: artist, language, era, mood, raw search terms,
+  // time-of-day pattern, and artist co-occurrence.
   if(primaryArtist) plan.tastePills.push({label:primaryArtist, weight:tasteProfile.artists[primaryArtist]});
   if(topLanguage) plan.tastePills.push({label:topLanguage, weight:tasteProfile.languages[topLanguage]});
   if(topEra) plan.tastePills.push({label:topEra, weight:tasteProfile.eras[topEra]});
   if(topMood) plan.tastePills.push({label:topMood, weight:tasteProfile.moods[topMood]});
   topTerms.slice(0,2).forEach(t=>plan.tastePills.push({label:`"${t}"`, weight:tasteProfile.rawTerms[t]}));
+  if(topTimeOfDay) plan.tastePills.push({label:`${topTimeOfDay} listener`, weight:tasteProfile.timeOfDay[topTimeOfDay]});
   const maxW = Math.max(1,...plan.tastePills.map(p=>p.weight));
   plan.tastePills.forEach(p=>p.pct = Math.min(100, Math.round((p.weight/maxW)*100)));
 
@@ -1043,7 +1206,7 @@ function loadAndPlay(song, list, idx){
   document.querySelectorAll('.eq-bars').forEach(eq=>eq.classList.add('paused'));
   document.querySelectorAll(`[data-song-id="${song.id}"] .eq-bars`).forEach(eq=>eq.classList.remove('paused'));
 
-  try{ sessionStorage.setItem(SK.song,JSON.stringify(song)); sessionStorage.setItem(SK.pos,'0'); }catch(e){}
+  try{ localStorage.setItem(SK.song,JSON.stringify(song)); localStorage.setItem(SK.pos,'0'); }catch(e){}
 
   // Refresh personalized rails on the home screen — but debounced and only
   // when the top signal has actually changed, so clicking through several
@@ -1055,15 +1218,20 @@ function loadAndPlay(song, list, idx){
 
 let recRefreshTimer = null;
 let lastRecSignature = '';
+function computeRecSignature(){
+  return JSON.stringify([
+    topEntries(tasteProfile.artists,3).map(e=>e[0]),
+    topEntries(tasteProfile.languages,1).map(e=>e[0]),
+    topEntries(tasteProfile.eras,1).map(e=>e[0]),
+    topEntries(tasteProfile.moods,1).map(e=>e[0]),
+    topEntries(tasteProfile.timeOfDay,1).map(e=>e[0]),
+    topEntries(tasteProfile.coOccurringArtists,2).map(e=>e[0]),
+  ]);
+}
 function scheduleRecommendationRefresh(){
   clearTimeout(recRefreshTimer);
   recRefreshTimer = setTimeout(()=>{
-    const sig = JSON.stringify([
-      topEntries(tasteProfile.artists,3).map(e=>e[0]),
-      topEntries(tasteProfile.languages,1).map(e=>e[0]),
-      topEntries(tasteProfile.eras,1).map(e=>e[0]),
-      topEntries(tasteProfile.moods,1).map(e=>e[0]),
-    ]);
+    const sig = computeRecSignature();
     if(sig === lastRecSignature) return; // nothing meaningful changed — skip the re-fetch
     lastRecSignature = sig;
     renderRecommendationZone();
@@ -1080,7 +1248,7 @@ function onTimeUpdate(){
   mpCurrent.textContent  = fmt(audio.currentTime);
   maxCurrent.textContent = fmt(audio.currentTime);
   if(Math.floor(audio.currentTime)%5===0){
-    try{ sessionStorage.setItem(SK.pos, audio.currentTime); }catch(e){}
+    try{ localStorage.setItem(SK.pos, audio.currentTime); }catch(e){}
   }
 }
 
@@ -1089,7 +1257,7 @@ function onMeta(){
   mpTotal.textContent  = fmt(audio.duration);
   maxTotal.textContent = fmt(audio.duration);
   try{
-    const saved = parseFloat(sessionStorage.getItem(SK.pos)||'0');
+    const saved = parseFloat(localStorage.getItem(SK.pos)||'0');
     if(saved>2 && saved<audio.duration-2){ audio.currentTime=saved; }
   }catch(e){}
 }
@@ -1097,6 +1265,9 @@ function onMeta(){
 function onEnded(){
   isPlaying=false;
   updatePlayIcons(false);
+  // Song played all the way to the end — the strongest possible taste signal.
+  recordCompletionSignal(currentSong, true);
+  if(homeView.style.display !== 'none') scheduleRecommendationRefresh();
   if(isLoop){ audio.currentTime=0; audio.play().then(()=>{isPlaying=true;updatePlayIcons(true);}); return; }
   if(isRepeat && currentSong){ loadAndPlay(currentSong, null, currentIndex); return; }
   playNext();
@@ -1153,7 +1324,7 @@ function changeQuality(q){
   audio.addEventListener('timeupdate',onTimeUpdate);
   audio.addEventListener('loadedmetadata',()=>{ audio.currentTime=t; if(was) audio.play().then(()=>{isPlaying=true;updatePlayIcons(true);}); });
   audio.addEventListener('ended',onEnded);
-  try{ sessionStorage.setItem(SK.qual,q); }catch(e){}
+  try{ localStorage.setItem(SK.qual,q); }catch(e){}
 }
 
 function setVolume(v){
@@ -1163,7 +1334,7 @@ function setVolume(v){
   const pct=v+'%';
   mpVol.style.setProperty('--vp',pct);
   maxVol.style.setProperty('--vp',pct);
-  try{ sessionStorage.setItem(SK.vol,v); }catch(e){}
+  try{ localStorage.setItem(SK.vol,v); }catch(e){}
 }
 
 // =================================================================================
@@ -1407,12 +1578,7 @@ async function renderRecommendationZone(){
   if(!hasSignal()) return; // nothing learned yet — skip personalized rails entirely
 
   const plan = buildRecommendationPlan();
-  lastRecSignature = JSON.stringify([
-    topEntries(tasteProfile.artists,3).map(e=>e[0]),
-    topEntries(tasteProfile.languages,1).map(e=>e[0]),
-    topEntries(tasteProfile.eras,1).map(e=>e[0]),
-    topEntries(tasteProfile.moods,1).map(e=>e[0]),
-  ]);
+  lastRecSignature = computeRecSignature();
   if(!plan.rails.length) return;
 
   // ---- Taste strip: shows what the engine has learned, transparently ----
@@ -1480,12 +1646,12 @@ async function renderRecommendationZone(){
 // =================================================================================
 function restoreSession(){
   try{
-    const savedSong = sessionStorage.getItem(SK.song);
+    const savedSong = localStorage.getItem(SK.song);
     if(!savedSong) return;
     const song = JSON.parse(savedSong);
-    const savedPos  = parseFloat(sessionStorage.getItem(SK.pos)||'0');
-    const savedVol  = parseFloat(sessionStorage.getItem(SK.vol)||'80');
-    const savedQual = sessionStorage.getItem(SK.qual)||'320';
+    const savedPos  = parseFloat(localStorage.getItem(SK.pos)||'0');
+    const savedVol  = parseFloat(localStorage.getItem(SK.vol)||'80');
+    const savedQual = localStorage.getItem(SK.qual)||'320';
 
     quality=savedQual; mpQuality.value=savedQual; maxQuality.value=savedQual;
     setVolume(savedVol);
@@ -1537,6 +1703,7 @@ async function runSearch(query){
   document.getElementById('resultsCountLabel').textContent='Searching…';
   searchResultsGrid.innerHTML='<div class="loader-wrap"><div class="loader"></div><p class="loader-text">Fetching tracks…</p></div>';
   resultsSection.classList.add('visible');
+  document.getElementById('historySection').classList.remove('visible');
   homeView.style.display='none';
 
   const reqId = ++searchRequestId; // guards against a slower earlier request overwriting a newer one
@@ -1562,6 +1729,7 @@ async function runSearch(query){
 function showHome(e){
   if(e) e.preventDefault();
   resultsSection.classList.remove('visible');
+  document.getElementById('historySection').classList.remove('visible');
   homeView.style.display='';
   searchInput.value='';
   document.getElementById('activeQueryLabel').textContent='Explore curated picks';
@@ -1569,6 +1737,73 @@ function showHome(e){
   document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.textContent.trim()==='Home'));
   renderRecommendationZone(); // refresh rails — taste may have updated since last view
 }
+
+// =================================================================================
+// HISTORY VIEW — every play, grouped by date, with real time/replay/completion info
+// =================================================================================
+function showHistory(e){
+  if(e) e.preventDefault();
+  resultsSection.classList.remove('visible');
+  homeView.style.display='none';
+  document.getElementById('historySection').classList.add('visible');
+  document.querySelectorAll('.nav-pill').forEach(p=>p.classList.toggle('active',p.textContent.trim()==='History'));
+  renderHistoryView();
+}
+
+function renderHistoryView(){
+  const listEl = document.getElementById('historyList');
+  if(!playLog.length){
+    listEl.innerHTML = `
+      <div class="history-empty">
+        <svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 1 1 2.06 4.94l-1.42 1.41A9 9 0 1 0 13 3zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8z"/></svg>
+        <div>No listening history yet — play a song to start building it.</div>
+      </div>`;
+    return;
+  }
+  // group by dateLabel (Today / Yesterday / 12 Jun, etc.), preserving recency order
+  const groups = [];
+  const groupIndex = {};
+  playLog.slice().sort((a,b)=>b.ts-a.ts).forEach(entry=>{
+    const label = entry.dateLabel || formatHistoryDate(new Date(entry.ts));
+    if(!(label in groupIndex)){ groupIndex[label] = groups.length; groups.push({label, entries:[]}); }
+    groups[groupIndex[label]].entries.push(entry);
+  });
+
+  listEl.innerHTML = groups.map(g=>`
+    <div class="history-date-group">
+      <div class="history-date-label">${esc(g.label)}</div>
+      ${g.entries.map(entry=>`
+        <div class="history-row ripple-host" data-song-id="${entry.songId}">
+          <img class="history-thumb" src="${entry.img||''}" alt="${esc(entry.title)}" loading="lazy">
+          <div class="history-info">
+            <div class="history-title">${esc(entry.title)}</div>
+            <div class="history-artist">${esc(entry.artist)}</div>
+          </div>
+          <div class="history-meta">
+            ${entry.playCount>1?`<span class="history-replay">×${entry.playCount}</span>`:''}
+            <span class="history-completed${entry.completed?'':' incomplete'}" title="${entry.completed?'Played to completion':'Not fully played'}"></span>
+            <span class="history-time">${esc(entry.timeLabel || formatHistoryTime(new Date(entry.ts)))}</span>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+
+  listEl.querySelectorAll('.history-row').forEach(row=>{
+    addRipple(row);
+    row.addEventListener('click',()=>{
+      const id = row.dataset.songId;
+      const song = allSongsFlat.find(s=>s.id===id);
+      if(song){ loadAndPlay(song, allSongsFlat, allSongsFlat.indexOf(song)); }
+      else toast('This track is no longer cached — try searching for it again.');
+    });
+  });
+}
+
+document.getElementById('clearHistoryBtn').addEventListener('click',()=>{
+  playLog = [];
+  saveTasteState();
+  renderHistoryView();
+  toast('Listening history cleared');
+});
 
 // =================================================================================
 // SEARCH SUGGESTIONS — typeahead dropdown
@@ -1751,8 +1986,8 @@ document.querySelectorAll('.mp-btn,.max-ctrl,.max-action-btn,.search-btn,.nav-pi
 // =================================================================================
 loadTasteState();
 try{
-  const q=sessionStorage.getItem(SK.qual); if(q){ quality=q; mpQuality.value=q; maxQuality.value=q; }
-  const v=sessionStorage.getItem(SK.vol);  if(v){ setVolume(parseFloat(v)); }
+  const q=localStorage.getItem(SK.qual); if(q){ quality=q; mpQuality.value=q; maxQuality.value=q; }
+  const v=localStorage.getItem(SK.vol);  if(v){ setVolume(parseFloat(v)); }
 }catch(e){}
 
 loadHomeSections();
